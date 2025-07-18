@@ -1,0 +1,12 @@
+# For MacOSX
+.DS_Store
+
+# For npm
+node_modules/
+
+# For Env
+.env
+
+# For Vitepress
+cache/
+dist/
