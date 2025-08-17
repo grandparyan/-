@@ -5,24 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>社團圖書管理系統</title>
     <style>
-        /* === 修改開始 === */
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background-color: #f0f2f5; /* 給頁面一個淺灰色背景 */
+            background-color: #f0f2f5; 
             margin: 0;
             padding: 2em;
         }
-
         .container {
-            max-width: 700px; /* 設定內容最大寬度，在大螢幕上不會太寬 */
-            margin: 2em auto; /* 上下邊距2em，左右自動 (這就是置中的關鍵！) */
+            max-width: 700px; 
+            margin: 2em auto; 
             padding: 2em;
-            background: #ffffff; /* 白色背景 */
-            border-radius: 8px; /* 圓角 */
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1); /* 加上立體陰影 */
+            background: #ffffff; 
+            border-radius: 8px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
         }
-        /* === 修改結束 === */
-
         h1, h2 { 
             color: #333; 
             border-bottom: 2px solid #007BFF;
@@ -37,6 +33,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
         }
         form { margin-top: 20px; }
         input { 
@@ -56,16 +53,20 @@
             font-size: 16px;
         }
         button:hover {
-            background: #218838;
+            opacity: 0.9;
+        }
+        /* === 為刪除按鈕新增樣式 === */
+        .delete-btn {
+            background: #dc3545; /* 紅色背景 */
+            padding: 8px 12px;
+            font-size: 14px;
+            margin-left: 10px;
         }
     </style>
 </head>
 <body>
-
     <div class="container">
-
         <h1>社團圖書管理系統</h1>
-
         <h2>新增書籍</h2>
         <form id="addBookForm">
             <input type="text" id="title" placeholder="書名" required><br>
@@ -73,53 +74,72 @@
             <input type="text" id="status" placeholder="狀態 (例如: 在館)" value="在館" required><br>
             <button type="submit">新增</button>
         </form>
-
         <h2>館藏列表</h2>
-        <ul id="bookList">
-            </ul>
-
+        <ul id="bookList"></ul>
     </div>
+
     <script>
-        // JavaScript 的部分完全不需要修改
         const bookList = document.getElementById('bookList');
         const addBookForm = document.getElementById('addBookForm');
 
-        // 函數：取得並顯示所有書籍
+        // === 修改 fetchBooks 函式來加上按鈕 ===
         async function fetchBooks() {
             const response = await fetch('/books/');
             const books = await response.json();
             
-            bookList.innerHTML = ''; // 清空現有列表
+            bookList.innerHTML = '';
             books.forEach(book => {
                 const li = document.createElement('li');
-                li.textContent = `ID: ${book.id} - ${book.title} (作者: ${book.author}) - 狀態: ${book.status}`;
+                
+                // 建立顯示書本資訊的文字部分
+                const bookInfo = document.createElement('span');
+                bookInfo.textContent = `ID: ${book.id} - ${book.title} (作者: ${book.author}) - 狀態: ${book.status}`;
+                
+                // 建立刪除按鈕
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = '刪除';
+                deleteButton.className = 'delete-btn'; // 加上 CSS class
+                deleteButton.onclick = () => deleteBook(book.id); // 綁定點擊事件
+
+                li.appendChild(bookInfo);
+                li.appendChild(deleteButton);
                 bookList.appendChild(li);
             });
         }
 
-        // 函數：新增書籍
+        // === 新增 deleteBook 函式 ===
+        async function deleteBook(bookId) {
+            // 在刪除前跳出確認視窗，防止誤觸
+            if (confirm(`您確定要刪除 ID 為 ${bookId} 的這本書嗎？`)) {
+                const response = await fetch(`/books/${bookId}`, {
+                    method: 'DELETE',
+                });
+
+                if (response.ok) {
+                    fetchBooks(); // 如果刪除成功，就重新整理一次書本列表
+                } else {
+                    alert('刪除失敗！');
+                }
+            }
+        }
+
         addBookForm.addEventListener('submit', async (event) => {
-            event.preventDefault(); // 防止表單直接提交
-            
+            event.preventDefault();
             const title = document.getElementById('title').value;
             const author = document.getElementById('author').value;
             const status = document.getElementById('status').value;
 
             await fetch('/books/', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ title, author, status }),
             });
 
-            addBookForm.reset(); // 清空表單
-            fetchBooks(); // 重新整理書籍列表
+            addBookForm.reset();
+            fetchBooks();
         });
-
-        // 頁面載入時，立即取得書籍列表
+        
         fetchBooks();
     </script>
-
 </body>
 </html>
