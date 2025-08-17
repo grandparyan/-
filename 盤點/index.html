@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>社團圖書管理系統</title>
+    <style>
+        /* === 修改開始 === */
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f0f2f5; /* 給頁面一個淺灰色背景 */
+            margin: 0;
+            padding: 2em;
+        }
+
+        .container {
+            max-width: 700px; /* 設定內容最大寬度，在大螢幕上不會太寬 */
+            margin: 2em auto; /* 上下邊距2em，左右自動 (這就是置中的關鍵！) */
+            padding: 2em;
+            background: #ffffff; /* 白色背景 */
+            border-radius: 8px; /* 圓角 */
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1); /* 加上立體陰影 */
+        }
+        /* === 修改結束 === */
+
+        h1, h2 { 
+            color: #333; 
+            border-bottom: 2px solid #007BFF;
+            padding-bottom: 10px;
+        }
+        ul { list-style-type: none; padding: 0; }
+        li { 
+            background: #f8f9fa; 
+            margin: 8px 0; 
+            padding: 15px; 
+            border-left: 5px solid #007BFF; 
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        form { margin-top: 20px; }
+        input { 
+            margin-bottom: 10px; 
+            padding: 10px; 
+            width: 95%; 
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button { 
+            padding: 12px 20px; 
+            background: #28a745; 
+            color: white; 
+            border: none; 
+            cursor: pointer; 
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #218838;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+
+        <h1>社團圖書管理系統</h1>
+
+        <h2>新增書籍</h2>
+        <form id="addBookForm">
+            <input type="text" id="title" placeholder="書名" required><br>
+            <input type="text" id="author" placeholder="作者" required><br>
+            <input type="text" id="status" placeholder="狀態 (例如: 在館)" value="在館" required><br>
+            <button type="submit">新增</button>
+        </form>
+
+        <h2>館藏列表</h2>
+        <ul id="bookList">
+            </ul>
+
+    </div>
+    <script>
+        // JavaScript 的部分完全不需要修改
+        const bookList = document.getElementById('bookList');
+        const addBookForm = document.getElementById('addBookForm');
+
+        // 函數：取得並顯示所有書籍
+        async function fetchBooks() {
+            const response = await fetch('/books/');
+            const books = await response.json();
+            
+            bookList.innerHTML = ''; // 清空現有列表
+            books.forEach(book => {
+                const li = document.createElement('li');
+                li.textContent = `ID: ${book.id} - ${book.title} (作者: ${book.author}) - 狀態: ${book.status}`;
+                bookList.appendChild(li);
+            });
+        }
+
+        // 函數：新增書籍
+        addBookForm.addEventListener('submit', async (event) => {
+            event.preventDefault(); // 防止表單直接提交
+            
+            const title = document.getElementById('title').value;
+            const author = document.getElementById('author').value;
+            const status = document.getElementById('status').value;
+
+            await fetch('/books/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ title, author, status }),
+            });
+
+            addBookForm.reset(); // 清空表單
+            fetchBooks(); // 重新整理書籍列表
+        });
+
+        // 頁面載入時，立即取得書籍列表
+        fetchBooks();
+    </script>
+
+</body>
+</html>
