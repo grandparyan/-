@@ -1,7 +1,7 @@
 import os
 import psycopg2
 from fastapi import FastAPI, HTTPException
-from pantic import BaseModel
+from pydantic import BaseModel
 from typing import Optional
 from fastapi.responses import FileResponse
 from psycopg2.extras import RealDictCursor
@@ -102,4 +102,5 @@ def delete_book(book_id: int):
     conn.close()
     if affected_rows == 0:
         raise HTTPException(status_code=404, detail="找不到該 ID 的書籍")
+
     return {"message": f"書籍 ID {book_id} 已成功刪除"}
